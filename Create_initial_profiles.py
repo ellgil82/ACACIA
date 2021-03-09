@@ -22,7 +22,7 @@ rand = np.empty(shape=(191,))
 for l in range(len(df['theta'].values)):
     rand[l] = np.random.rand()
 
-df['q_pert'] = pd.Series((df['Water vapour'].values + (rand - 0.5) * 0.1) - df['Water vapour'].values)
+df['q_pert'] = pd.Series(((df['Water vapour'].values + (rand - 0.5) * 0.1) * df['Water vapour'].values) - df['Water vapour'].values)
 
 #create range of random numbers
 rand = np.empty(shape=(191,))
