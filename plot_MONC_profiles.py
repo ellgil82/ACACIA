@@ -5,7 +5,7 @@ import matplotlib
 import pandas as pd
 
 filepath = '/storage/silver/acacia/ke923690/acacia/'
-filename = 'Yang_test1_thermodyn_only_?d_100.nc'
+filename = 'Yang_test4b*_3600.nc'
 
 # Load files
 filename = input("Enter name of diagnostics file\n")
@@ -89,18 +89,20 @@ for profile in df.keys():
 
 plt.show()
 
+filename = 'Yang_test4b_*d_14400.nc'
+
 w = iris.load_cube(filepath+filename, 'w')
 th = iris.load_cube(filepath+filename, 'th') #perturbation
-th_init = np.genfromtxt(filepath + 'Yang_forcing/theta.csv', delimiter=',')
+th_init = iris.load_cube(filepath + filename, 'thinit')
 theta = th+th_init
 q = iris.load_cube(filepath+filename, 'q_vapour')
+rh = iris.load_cube(filepath + filename, 'rh_mean')
+iwp = iris.load_cube(filepath + filename, 'iwp')
 ICNC = iris.load_cube(filepath+filename, 'q_ice_number')
-rh = iris.load_cube(filepath+filename, 'rh_mean')
-q_ice_mass = iris.load_cube(filepath+filename, 'q_ice_mass')
+rho = iris.load_cube(filepath+filename, 'rho')
+ICNC_cm3 = (ICNC[-1].data.mean(axis=(0,1)) * rho[-1].data)/10e6
 ice_mmr = iris.load_cube(filepath+filename, 'ice_mmr_mean')
+sed = iris.load_cube(filepath+filename, 'psedi_mean')
+dep = iris.load_cube(filepath+filename, 'pidep_mean')
 
-z = ice_mmr.coord('zn').points
-
-plt.plot(ICNC[0].data.mean(axis=(0,1)),z)
-#plt.plot(ice_mmr[0].data, z)
-plt.show()
+z = rh.coord('zn').points

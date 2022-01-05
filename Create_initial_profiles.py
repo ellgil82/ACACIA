@@ -43,4 +43,27 @@ df['Water vapour'].to_csv(filepath + 'q.csv')
 df['q_pert'].to_csv(filepath + 'q_pert.csv')
 df['theta_pert'].to_csv(filepath + 'theta_pert.csv')
 
+# Independent test of profiles
+import metpy.calc
+from metpy.units import units
+P = df['Pressure'].values * units.hPa
+theta = df['theta'].values * units.kelvin
+q = df['Water vapour'].values * units('kg/kg')
+T = metpy.calc.temperature_from_potential_temperature(pressure= P, potential_temperature=theta)
+LR = metpy.calc.moist_lapse(pressure = P, temperature = T, reference_pressure=1019.3844 * units.hPa)
+RH = metpy.calc.relative_humidity_from_specific_humidity(pressure =P, temperature=T, specific_humidity = q)
 
+
+th = iris.load_cube(filepath+filename, 'th') #perturbation
+th_init = np.genfromtxt(filepath + 'Yang_forcing/theta.csv', delimiter=',', usecols=1, skip_header=1)
+theta_sim = th+th_init
+q_sim = iris.load_cube(filepath+filename, 'q_vapour')
+theta_sim = np.mean(theta_sim[0].data, axis = (0,1)).data*units.kelvin
+T_sim = metpy.calc.temperature_from_potential_temperature(pressure= P, potential_temperature= theta_sim )
+RH_sim = metpy.calc.relative_humidity_from_specific_humidity(pressure =P, temperature=T_sim, specific_humidity = np.mean(q_sim[0].data, axis=(0,1)) * units('kg/kg'))
+
+plt.plot(RH*100, z, label = 'calculated')
+plt.plot(rh[0].data*100, z, label = 'simulated')
+plt.plot(RH_sim *100, z, label = 'calc_sim')
+plt.legend()
+plt.show()

@@ -28,7 +28,7 @@ value.standard_name = 'wsubs'
 wsubs = np.genfromtxt(filepath + 'gravity_wave_forcing.dat')
 wsubs_profile = np.tile(wsubs[:,1], (191,1))
 zs[:] = np.genfromtxt(filepath + 'Heights.dat')
-times[:] = wsubs[:,0]
+times[:] = wsubs[:,0].astype(int)
 
 for i, t in enumerate(times):
     value[i, :] = wsubs_profile[:,i]
@@ -67,6 +67,43 @@ times[:] = np.arange(0, 21600, 300)
 
 for i, t in enumerate(times):
     value[i, :] = heating_profile[i, :191]
+
+ds.close()
+
+## Create q forcing
+fn = 'q_time_dependent_forcing.nc'
+
+ds = nc.Dataset(filepath + fn, 'w', format='NETCDF4')
+
+time = ds.createDimension('time', None)
+z = ds.createDimension('z', 191)
+
+times = ds.createVariable('time', 'f4', ('time',))
+times.units = 'seconds'
+times.long_name = 'time'
+times.standard_name = 'time'
+
+zs = ds.createVariable('z', 'f4', ('z',))
+zs.units ='m'
+zs.standard_name = 'z'
+zs.long_name = 'z'
+
+value = ds.createVariable('q_tendency', 'f4', ('time', 'z'))
+value.units = 'kg/kg/s'
+value.long_name = 'q_tendency'
+value.standard_name = 'q_tendency'
+
+q_force = np.loadtxt(filepath + 'q_forcing.csv', delimiter=',') # in kg/kg/s
+
+ht = np.genfromtxt(filepath + 'Heights.dat')
+zs[:] = ht
+times[:] = np.arange(0, 21600, 300)
+
+q_force_profile = np.tile(q_force[:, np.newaxis], 72)
+q_force_profile = q_force_profile.transpose()
+
+for i, t in enumerate(times):
+    value[i, :] = q_force_profile[i, :191]
 
 ds.close()
 
